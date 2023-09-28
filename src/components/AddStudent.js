@@ -9,14 +9,14 @@ import TextField from '@mui/material/TextField';
 import { NumberInput } from '@mui/base/Unstable_NumberInput/NumberInput';
 
 
-// properties editStudent is required, function called when Edit clicked.
-function EditStudent(props) { 
+// properties addCoure is required, function called when Add clicked.
+function AddStudent(props) { 
 
   const [open, setOpen] = useState(false);
-  const [new_student_name, setStudentName] = useState("");
-  const [new_student_email, setStudentEmail] = useState("");
-  const [new_student_status, setStudentStatus] = useState("");
-  const [new_student_status_code, setStudentStatusCode] = useState(0);
+  const [student_name, setStudentName] = useState("");
+  const [student_email, setStudentEmail] = useState("");
+  const [student_status, setStudentStatus] = useState("");
+  const [student_status_code, setStudentStatusCode] = useState(0);
  
   
   const handleClickOpen = () => {
@@ -43,45 +43,44 @@ function EditStudent(props) {
     setStudentStatusCode( event.target.value);
   }
 
-// Save student and close modal form
-  const handleEdit = (event) => {
-      props.editStudent(new_student_name, new_student_email, new_student_status, new_student_status_code);
+// Save course and close modal form
+  const handleAdd = () => {
+      props.addStudent(student_name, student_email, student_status, student_status_code);
       handleClose();
   }
 
   return (
       <div>
-        <Button id="editStudent" onClick={handleClickOpen}>
-          Edit
+        <Button id="addStudent" variant="outlined" color="primary" style={{margin: 10}} onClick={handleClickOpen}>
+          Add Student
         </Button>
         <Dialog open={open} onClose={handleClose}>
-            <DialogTitle>Edit Student</DialogTitle>
+            <DialogTitle>Add Student</DialogTitle>
             <DialogContent  style={{paddingTop: 20}} >
-                <input hidden='true' type='int'></input>
-              <TextField id="newStudentName" hidden='true' autoFocus fullWidth label="Student Name" name="new_student_name" onChange={handleNameChange}  /> 
+              <TextField id="studentName" autoFocus fullWidth label="Student Name" name="student_name" onChange={handleNameChange}  /> 
             </DialogContent>
             <DialogContent  style={{paddingTop: 20}} >
-              <TextField id="newStudentEmail" fullWidth label="Student Email" name="new_student_email" onChange={handleEmailChange}  /> 
+              <TextField id="studentEmail" fullWidth label="Student Email" name="student_email" onChange={handleEmailChange}  /> 
             </DialogContent>
             <DialogContent  style={{paddingTop: 20}} >
-              <TextField id="newStudentStatus" value="yes" fullWidth label="Student Status" name="new_student_status" onChange={handleStatusChange}  /> 
+              <TextField id="studentStatus" fullWidth label="Student Status" name="student_status" onChange={handleStatusChange}  /> 
             </DialogContent>
             <DialogContent  style={{paddingTop: 20}} >
               {/* <TextField id="studentStatusCode" fullWidth label="Student Status Code" name="student_status_code" onChange={handleStatusCodeChange}  />  */}
-              <NumberInput id="newStudentStatusCode" fullWidth label="Student Status Code" name="new_student_status_code" onChange={handleStatusCodeChange} />
+              <NumberInput id="studentStatusCode" fullWidth label="Student Status Code" name="student_status_code" onChange={handleStatusCodeChange} />
             </DialogContent>
             <DialogActions>
               <Button color="secondary" onClick={handleClose}>Cancel</Button>
-              <Button id="saveChanges" color="primary" onClick={handleEdit}>Save</Button>
+              <Button id="add" color="primary" onClick={handleAdd}>Add</Button>
             </DialogActions>
           </Dialog>      
       </div>
   ); 
 }
 
-// required property:  editStudent is a function to call to perform the Edit action
-EditStudent.propTypes = {
-  editStudent : PropTypes.func.isRequired,
+// required property:  addCourse is a function to call to perform the Add action
+AddStudent.propTypes = {
+  addStudent : PropTypes.func.isRequired
 }
 
-export default EditStudent;
+export default AddStudent;
