@@ -6,19 +6,22 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import { NumberInput } from '@mui/base/Unstable_NumberInput/NumberInput';
-
+import { SERVER_URL } from '../constants';
+import { Input } from '@mui/base';
 
 // properties editStudent is required, function called when Edit clicked.
 function EditStudent(props) { 
 
   const [open, setOpen] = useState(false);
-  const [new_student_name, setStudentName] = useState("");
-  const [new_student_email, setStudentEmail] = useState("");
-  const [new_student_status, setStudentStatus] = useState("");
-  const [new_student_status_code, setStudentStatusCode] = useState(0);
+  const [newStudent, setStudent] = useState(
+      {
+        student_id: props.student.studentId,
+        name: props.student.name,
+        email:props.student.email,
+        status:props.student.status,
+        statusCode: props.student.statusCode
+      });
  
-  
   const handleClickOpen = () => {
     setOpen(true);
   };
@@ -27,26 +30,51 @@ function EditStudent(props) {
     setOpen(false);
   };
 
-  const handleNameChange = (event) => {
-    setStudentName( event.target.value);
-  }
-
-  const handleEmailChange = (event) => {
-    setStudentEmail( event.target.value);
-  }
-
-  const handleStatusChange = (event) => {
-    setStudentStatus( event.target.value);
-  }
-
-  const handleStatusCodeChange = (event) => {
-    setStudentStatusCode( event.target.value);
-  }
-
-// Save student and close modal form
+  // Save student and close modal form
   const handleEdit = (event) => {
-      props.editStudent(new_student_name, new_student_email, new_student_status, new_student_status_code);
-      handleClose();
+      editStudent();
+  }
+
+  const handleChange = (event) => {
+    if(event.target.value < 0) {
+      alert("Invalid Status Code. Status code cannot be negative");
+    } else {
+      setStudent({...newStudent,  [event.target.name]:event.target.value})
+    }
+  }
+
+  /*
+  *  edit student
+  */ 
+  const  editStudent = () => {
+    props.setMessage('');
+    const row_id = props.student.studentId;
+    console.log("edit student "+row_id);
+
+    fetch(`${SERVER_URL}/student/${row_id}`,
+        {
+            method: 'PUT',
+            headers: {'content-type':'application/json'}, 
+            body: JSON.stringify(newStudent)
+        })
+    .then(res => {
+        if (res.ok) {
+            console.log("edit ok");
+            props.setMessage("Student updated.");
+            props.fetchStudents();
+            handleClose();
+        } else if (res.status === 400) {
+          console.log("Cannot change to students email. It already exists");
+          alert("Cannot change to students email. It already exists");
+        } else {
+            console.log("edit error");
+            props.setMessage("Error editStudent. "+res.status);
+        }
+        })
+    .catch( (err) => {
+        console.log("exception editStudent "+err);
+        props.setMessage("Exception. "+err);
+      } );
   }
 
   return (
@@ -57,18 +85,16 @@ function EditStudent(props) {
         <Dialog open={open} onClose={handleClose}>
             <DialogTitle>Edit Student</DialogTitle>
             <DialogContent  style={{paddingTop: 20}} >
-                <input hidden='true' type='int'></input>
-              <TextField id="newStudentName" hidden='true' autoFocus fullWidth label="Student Name" name="new_student_name" onChange={handleNameChange}  /> 
+              <TextField id="newStudentName" defaultValue={props.student.name} autoFocus fullWidth label="Student Name" name="name" onChange={handleChange}/> 
             </DialogContent>
             <DialogContent  style={{paddingTop: 20}} >
-              <TextField id="newStudentEmail" fullWidth label="Student Email" name="new_student_email" onChange={handleEmailChange}  /> 
+              <TextField id="newStudentEmail" defaultValue={props.student.email} fullWidth label="Student Email" name="email" onChange={handleChange}/> 
             </DialogContent>
             <DialogContent  style={{paddingTop: 20}} >
-              <TextField id="newStudentStatus" value="yes" fullWidth label="Student Status" name="new_student_status" onChange={handleStatusChange}  /> 
+              <TextField id="newStudentStatus" defaultValue={props.student.status} fullWidth label="Student Status" name="status" onChange={handleChange}/> 
             </DialogContent>
             <DialogContent  style={{paddingTop: 20}} >
-              {/* <TextField id="studentStatusCode" fullWidth label="Student Status Code" name="student_status_code" onChange={handleStatusCodeChange}  />  */}
-              <NumberInput id="newStudentStatusCode" fullWidth label="Student Status Code" name="new_student_status_code" onChange={handleStatusCodeChange} />
+              <Input type='number' defaultValue={props.student.statusCode} placeholder="Status Code" id="newStudentStatusCode" fullwidth="true" label="Student Status Code" name="statusCode" onChange={handleChange} />
             </DialogContent>
             <DialogActions>
               <Button color="secondary" onClick={handleClose}>Cancel</Button>
@@ -81,7 +107,7 @@ function EditStudent(props) {
 
 // required property:  editStudent is a function to call to perform the Edit action
 EditStudent.propTypes = {
-  editStudent : PropTypes.func.isRequired,
+  fetchStudents : PropTypes.func.isRequired,
 }
 
 export default EditStudent;

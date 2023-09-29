@@ -6,47 +6,66 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import { NumberInput } from '@mui/base/Unstable_NumberInput/NumberInput';
-
+import { SERVER_URL } from '../constants';
+import { Input } from '@mui/base';
 
 // properties addCoure is required, function called when Add clicked.
 function AddStudent(props) { 
 
   const [open, setOpen] = useState(false);
-  const [student_name, setStudentName] = useState("");
-  const [student_email, setStudentEmail] = useState("");
-  const [student_status, setStudentStatus] = useState("");
-  const [student_status_code, setStudentStatusCode] = useState(0);
- 
-  
+  const [student, setStudent] = useState({student_id: 0, name:"", email:"", status:"", statusCode: 0});
+
   const handleClickOpen = () => {
     setOpen(true);
   };
 
   const handleClose = () => {
+    props.fetchStudents();
     setOpen(false);
   };
 
-  const handleNameChange = (event) => {
-    setStudentName( event.target.value);
+  const editChange = (event) => {
+    if(event.target.value < 0) {
+          alert("Invalid Status Code. " + student.statusCode + " cannot be negative");
+    } else {
+      setStudent({...student,  [event.target.name]:event.target.value})
+    }
   }
 
-  const handleEmailChange = (event) => {
-    setStudentEmail( event.target.value);
+  /*
+  *  add student
+  */ 
+  const  addStudent = () => {
+    props.setMessage('');
+    console.log("start addStudent"); 
+    fetch(`${SERVER_URL}/student/`,
+    { 
+        method: 'POST',
+        headers: {'content-type':'application/json'}, 
+        body: JSON.stringify(student)
+    })
+    .then(res => {
+        if (res.ok) {
+          console.log("addStudent ok");
+          props.setMessage("Student added.");
+          props.fetchStudents();
+          handleClose();
+        } else if (res.status === 406) {
+          console.log("Invalid Email. A student with that email already exists");
+          alert("Invalid Email. A student with that email already exists");
+        } else {
+        console.log('error addStudent ' + res.status);
+        props.setMessage("Error. "+res.status);
+        }})
+    .catch(err => {
+        console.error("exception addStudent "+ err);
+        props.setMessage("Exception. "+err);
+    })
   }
 
-  const handleStatusChange = (event) => {
-    setStudentStatus( event.target.value);
-  }
-
-  const handleStatusCodeChange = (event) => {
-    setStudentStatusCode( event.target.value);
-  }
-
-// Save course and close modal form
+  // Save course and close modal form
   const handleAdd = () => {
-      props.addStudent(student_name, student_email, student_status, student_status_code);
-      handleClose();
+      addStudent();
   }
 
   return (
@@ -57,17 +76,16 @@ function AddStudent(props) {
         <Dialog open={open} onClose={handleClose}>
             <DialogTitle>Add Student</DialogTitle>
             <DialogContent  style={{paddingTop: 20}} >
-              <TextField id="studentName" autoFocus fullWidth label="Student Name" name="student_name" onChange={handleNameChange}  /> 
+              <TextField id="studentName" autoFocus fullWidth label="Student Name" name="name" onChange={editChange}  /> 
             </DialogContent>
             <DialogContent  style={{paddingTop: 20}} >
-              <TextField id="studentEmail" fullWidth label="Student Email" name="student_email" onChange={handleEmailChange}  /> 
+              <TextField id="studentEmail" fullWidth label="Student Email" name="email" onChange={editChange}  /> 
             </DialogContent>
             <DialogContent  style={{paddingTop: 20}} >
-              <TextField id="studentStatus" fullWidth label="Student Status" name="student_status" onChange={handleStatusChange}  /> 
+              <TextField id="studentStatus" fullWidth label="Student Status" name="status" onChange={editChange}  /> 
             </DialogContent>
             <DialogContent  style={{paddingTop: 20}} >
-              {/* <TextField id="studentStatusCode" fullWidth label="Student Status Code" name="student_status_code" onChange={handleStatusCodeChange}  />  */}
-              <NumberInput id="studentStatusCode" fullWidth label="Student Status Code" name="student_status_code" onChange={handleStatusCodeChange} />
+              <Input type='number' placeholder="Status Code" id="studentStatusCode" fullwidth='true' label="Student Status Code" name="statusCode" onChange={editChange} />
             </DialogContent>
             <DialogActions>
               <Button color="secondary" onClick={handleClose}>Cancel</Button>
@@ -80,7 +98,7 @@ function AddStudent(props) {
 
 // required property:  addCourse is a function to call to perform the Add action
 AddStudent.propTypes = {
-  addStudent : PropTypes.func.isRequired
+  fetchStudents : PropTypes.func.isRequired
 }
 
 export default AddStudent;
