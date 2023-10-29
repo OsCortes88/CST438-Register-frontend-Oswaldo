@@ -37,6 +37,7 @@ function StudentHome( ) {
         </tbody>
       </table>
       <Link id="viewSchedule" to={`/schedule?termId=${termId}`} > View Schedule </Link>
+      
     </div>
   );
 }

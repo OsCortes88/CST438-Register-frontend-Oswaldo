@@ -21,7 +21,8 @@ function EditStudent(props) {
         status:props.student.status,
         statusCode: props.student.statusCode
       });
- 
+  const token = sessionStorage.getItem("jwt");
+
   const handleClickOpen = () => {
     setOpen(true);
   };
@@ -54,7 +55,7 @@ function EditStudent(props) {
     fetch(`${SERVER_URL}/student/${row_id}`,
         {
             method: 'PUT',
-            headers: {'content-type':'application/json'}, 
+            headers: {'Authorization' : token, 'content-type':'application/json'}, 
             body: JSON.stringify(newStudent)
         })
     .then(res => {
